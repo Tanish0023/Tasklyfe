@@ -26,7 +26,7 @@ app.use(cors({
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-app.options("*", cors());
+app.use(cors());
 
 // ✅ 1. Static Folder Setup: Frontend ko images aur files dikhane ke liye
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
