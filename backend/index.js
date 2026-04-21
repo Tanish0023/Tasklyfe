@@ -7,7 +7,7 @@ const { Server } = require('socket.io');
 const path = require('path'); // ✅ Required for static file serving
 
 // Workspace Model (Socket DB updates ke liye zaroori hai)
-const Workspace = require('./models/Workspace'); 
+const Workspace = require('./models/Workspace');
 
 // Routes Imports
 const authRoutes = require('./routes/authRoutes');
@@ -17,8 +17,16 @@ const aiRoutes = require('./routes/aiRoutes');
 const uploadRoutes = require('./routes/uploadRoutes'); // ✅ Upload Route Import
 
 const app = express();
-app.use(cors());
+// app.use(cors());
 app.use(express.json());
+
+app.use(cors({
+  origin: "https://tasklyfe.vercel.app",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+app.options("*", cors());
 
 // ✅ 1. Static Folder Setup: Frontend ko images aur files dikhane ke liye
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -27,7 +35,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", 
+    origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"]
   }
 });
@@ -78,7 +86,7 @@ io.on('connection', (socket) => {
       if (data.text) {
         const urlRegex = /(https?:\/\/[^\s]+)/g;
         const links = data.text.match(urlRegex);
-        
+
         if (links) {
           for (const link of links) {
             await Workspace.findByIdAndUpdate(data.workspaceId, {
@@ -97,7 +105,7 @@ io.on('connection', (socket) => {
 
       // Step D: Broadcast message to everyone in the workspace
       io.to(data.workspaceId).emit('receive_message', data);
-      
+
     } catch (error) {
       console.error("Socket send_message Error:", error);
     }
